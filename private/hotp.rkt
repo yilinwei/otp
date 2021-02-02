@@ -18,36 +18,30 @@
 (define (luhn-checksum num
                        [digits
                         (add1 (ceiling (log num 10)))])
-  (define (loop num total digits even-digit?)
-    (define digits* (sub1 digits))
-    (cond
-      [(< 0 digits*)
-       (define digit (modulo num 10))
-       (loop
-        (floor (/ num 10))
-        (+ total
-           (if even-digit?
-               (double-digits->value digit)
-               digit))
-        digits*
-        (not even-digit?))]
-      [else total]))
-  (define result (modulo (loop num 0 digits #t) 10))
+  (define result
+    (for/fold
+        ([num num]
+         [total 0]
+         [even-digit? #t]
+         #:result
+         (modulo total 10))
+        ([_ (in-range 0 digits)])
+      (define digit (modulo num 10))
+      (values
+       (floor (/ num 10))
+       (+ total
+          (if even-digit?
+              (double-digits->value digit)
+              digit))
+       (not even-digit?))))
   (if (< 0 result)
       (- 10 result)
       result))
 
 (define (otp/hash secret moving-factor mode)
-  (define bstr-len 8)
-  (define bstr (make-bytes bstr-len))
-  (for/fold
-      ([moving-factor moving-factor])
-      ([i (in-range 1 (add1 bstr-len))])
-    (define i* (- bstr-len i))
-    (bytes-set! bstr i* (bitwise-and moving-factor
-                                     #xff))
-    (arithmetic-shift moving-factor
-                      -8))
+  (define bstr
+    (integer->integer-bytes
+     moving-factor 8 #f #t))
   (hmac mode secret bstr))
 
 (define digits-table
@@ -60,11 +54,11 @@
 
 ;; Implementation directly taken from RFC 4226
 (define (generate-hotp secret
-             moving-factor
-             #:mode [mode sha1]
-             #:digits [digits 6]
-             #:checksum? [checksum? #f]
-             #:truncation-offset [truncation-offset #f])
+                       moving-factor
+                       #:mode [mode sha1]
+                       #:digits [digits 6]
+                       #:checksum? [checksum? #f]
+                       #:truncation-offset [truncation-offset #f])
   (define hash (otp/hash secret moving-factor mode))
   (define offset
     (or truncation-offset
@@ -72,6 +66,7 @@
          (bytes-ref hash
                     (sub1 (bytes-length hash)))
          #xf)))
+  (make-bytes 4)
   (define (at i [mask #xff])
     (bitwise-and
      (bytes-ref hash i) mask))
