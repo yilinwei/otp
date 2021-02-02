@@ -9,14 +9,20 @@
 (define sha1 (get-digest 'sha1 libcrypto-factory))
 (define sha256 (get-digest 'sha256 libcrypto-factory))
 (define sha512 (get-digest 'sha512 libcrypto-factory))
+(define sha1-secret (string->bytes/utf-8 "12345678901234567890"))
 
 (define-check (check-totp mode secret lst)
   (for
       ([test (in-list lst)])
     (match-define (list time otp) test)
-    (check-equal?
-     (generate-totp secret #:time time #:mode mode)
-     otp)))
+    (define code
+      (generate-totp secret #:time time #:mode mode))
+    (check-equal? code otp)
+    (check-true (totp-valid? secret
+                             code
+                             #:time time
+                             #:mode mode
+                             #:max-drift 0))))
 
 (define-check (check-hotp mode lst)
   (define secret
@@ -31,19 +37,33 @@
 
 (test-begin
   (define count 0)
-  (define secret (string->bytes/utf-8 "123a992as123"))
   (define code
     (generate-hotp
-     secret
+     sha1-secret
      count
      #:checksum? #t))
-  (check-true (hotp-valid? secret count code #:checksum? #t))
+  (check-true (hotp-valid? sha1-secret count code #:checksum? #t))
   (check-exn exn:fail:otp:checksum?
-             (λ () (hotp-valid? secret count "01231904" #:checksum? #t))))
+             (λ () (hotp-valid? sha1-secret count "01231904" #:checksum? #t))))
+
+(test-begin
+  (define code (generate-totp sha1-secret #:time 119))
+  (check-true (totp-valid? sha1-secret code #:time 59 #:max-drift 2))
+  (check-false (totp-valid? sha1-secret code #:time 59 #:max-drift 1)))
+
+(test-begin
+  (define time 119)
+  (check-true
+   (totp-valid?
+    sha1-secret
+    (generate-totp sha1-secret
+                   #:time time #:checksum? #t)
+    #:time time
+    #:checksum? #t)))
 
 (check-totp
  sha1
- (string->bytes/utf-8 "12345678901234567890")
+ sha1-secret
  '((59 "94287082")
    (1111111109 "07081804")
    (1111111111 "14050471")

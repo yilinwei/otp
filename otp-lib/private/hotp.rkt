@@ -3,8 +3,8 @@
 (require crypto
          crypto/libcrypto
          racket/format
-         "checksum.rkt"
-         "error.rkt")
+         "utils.rkt"
+         "checksum.rkt")
 
 (define sha1
   (get-digest 'sha1 libcrypto-factory))
@@ -49,7 +49,7 @@
   (define code (modulo i (digits->modulus digits)))
   (~a
    (if checksum?
-       (* 10 code (luhn-checksum code digits))
+       (+ (* 10 code) (luhn-checksum code digits))
        code)
    #:width (if checksum? (add1 digits) digits)
    #:align 'right
@@ -62,21 +62,7 @@
                      #:digits [digits 6]
                      #:checksum? [checksum? #f]
                      #:truncation-offset [truncation-offset #f])
-  (define expected
-    (cond
-      [checksum?
-       (define len* (sub1 (string-length code)))
-       (define checksum (char->integer (string-ref code len*)))
-       (define code* (substring code 0 len*))
-       (unless (luhn-checksum-valid? checksum
-                                     (string->number code*)
-                                     (sub1 len*))
-         (raise
-          (exn:fail:otp:checksum
-           (~a code " has incorrect checksum")
-           (current-continuation-marks))))
-       code*]
-      [else code]))
+  (define expected (checked-code code checksum?))
   (equal?
    (generate-hotp secret
                   moving-factor
