@@ -67,16 +67,15 @@
                     (sub1 (bytes-length hash)))
          #xf)))
   (make-bytes 4)
-  (define (at i [mask #xff])
-    (bitwise-and
-     (bytes-ref hash i) mask))
-  (define bstr
-    (bitwise-ior
-     (arithmetic-shift (at offset #x7f) 24)
-     (arithmetic-shift (at (add1 offset)) 16)
-     (arithmetic-shift (at (+ 2 offset)) 8)
-     (at (+ 3 offset))))
-  (define code (modulo bstr (digits->modulus digits)))
+  (define bstr (subbytes hash offset (+ 4 offset)))
+  (bytes-set! bstr
+              0
+              (bitwise-and
+               (bytes-ref bstr 0)
+               #x7f))
+  (define i
+    (integer-bytes->integer bstr #t #t))
+  (define code (modulo i (digits->modulus digits)))
   (~a
    (if checksum?
        (* 10 code (luhn-checksum generate-hotp digits))
