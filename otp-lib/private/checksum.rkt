@@ -58,7 +58,8 @@
            racket/match)
 
   (for
-      ([test (in-list '([7992739871 3]))])
+      ([test (in-list '([7992739871 3]
+                        [7552243 3]))])
     (match-define (list num checksum) test)
     (check-equal? (luhn-checksum num) checksum)
     (check-true (luhn-checksum-valid? num checksum))

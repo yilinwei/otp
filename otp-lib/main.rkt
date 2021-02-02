@@ -27,6 +27,13 @@
            (string-length %)
            n)))))
 
+(define (code-or-code/checksum digits default-digits checksum?)
+  (let
+      ([digits* (default/c digits default-digits)]
+       [checksum?* (default/c checksum? #f)])
+    (string-len=/c
+     (if checksum?* (add1 digits*) digits*))))
+
 (provide
  (struct-out exn:fail:otp:checksum)
  (contract-out
@@ -47,10 +54,27 @@
      #:time [t exact-integer?]
      #:time-start [t₀ exact-positive-integer?]
      #:time-step [Δt exact-positive-integer?]
-     #:digits [digits otp-digits/c])
-    [otp (digits)
-         (string-len=/c
-          (default/c digits 8))])]
+     #:digits [digits otp-digits/c]
+     #:checksum? [checksum? boolean?])
+    [otp (digits checksum?)
+         (code-or-code/checksum
+          digits 8
+          checksum?)])]
+  [totp-valid?
+   (->*
+    (bytes?
+     string?)
+    (#:mode digest-spec-or-impl?
+     #:time (or/c exact-integer?
+                  (-> exact-integer?))
+     #:time-start exact-positive-integer?
+     #:time-step exact-positive-integer?
+     #:digits otp-digits/c
+     #:checksum? boolean?
+     #:max-drift (or/c
+                  zero?
+                  exact-positive-integer?))
+    boolean?)]
   [generate-hotp
    (->i
     ([secret bytes?]
@@ -60,8 +84,6 @@
      #:checksum? [checksum? boolean?]
      #:truncation-offset [truncation-offset (or/c #f (</c 16))])
     [otp (digits checksum?)
-         (let
-             ([digits* (default/c digits 6)]
-              [checksum?* (default/c checksum? #f)])
-           (string-len=/c
-            (if checksum?* (add1 digits*) digits*)))])]))
+         (code-or-code/checksum
+          digits 6
+          checksum?)])]))
