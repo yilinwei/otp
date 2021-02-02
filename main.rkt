@@ -18,9 +18,9 @@
    (->i
     ([secret bytes?])
     (#:mode [mode digest-spec-or-impl?]
-     #:time [time exact-integer?]
-     #:time-start [time-start exact-positive-integer?]
-     #:time-step [time-step exact-positive-integer?]
+     #:time [t exact-integer?]
+     #:time-start [t₀ exact-positive-integer?]
+     #:time-step [Δt exact-positive-integer?]
      #:digits [digits otp-digits/c])
     [otp (digits) (string-len/c digits)])]
   [generate-hotp
@@ -63,7 +63,7 @@
       (check-equal?
        (generate-hotp secret count #:mode mode)
        expected)))
-  
+
   (check-totp
    sha1
    (string->bytes/utf-8 "12345678901234567890")
