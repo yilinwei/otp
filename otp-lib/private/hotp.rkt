@@ -2,41 +2,12 @@
 
 (require crypto
          crypto/libcrypto
-         racket/format)
+         racket/format
+         "checksum.rkt"
+         "error.rkt")
 
 (define sha1
   (get-digest 'sha1 libcrypto-factory))
-
-(define double-digits-table
-  (vector-immutable
-   0 2 4 6 8 1 3 5 7 9))
-
-(define (double-digits->value digit)
-  (vector-ref double-digits-table digit))
-
-;; Credit card checksum algorithm from RFC 4226
-(define (luhn-checksum num
-                       [digits
-                        (add1 (ceiling (log num 10)))])
-  (define result
-    (for/fold
-        ([num num]
-         [total 0]
-         [even-digit? #t]
-         #:result
-         (modulo total 10))
-        ([_ (in-range 0 digits)])
-      (define digit (modulo num 10))
-      (values
-       (floor (/ num 10))
-       (+ total
-          (if even-digit?
-              (double-digits->value digit)
-              digit))
-       (not even-digit?))))
-  (if (< 0 result)
-      (- 10 result)
-      result))
 
 (define (otp/hash secret moving-factor mode)
   (define bstr
@@ -78,24 +49,48 @@
   (define code (modulo i (digits->modulus digits)))
   (~a
    (if checksum?
-       (* 10 code (luhn-checksum generate-hotp digits))
+       (* 10 code (luhn-checksum code digits))
        code)
    #:width (if checksum? (add1 digits) digits)
    #:align 'right
    #:left-pad-string "0"))
 
-(provide generate-hotp sha1)
+(define (hotp-valid? secret
+                     moving-factor
+                     code
+                     #:mode [mode sha1]
+                     #:digits [digits 6]
+                     #:checksum? [checksum? #f]
+                     #:truncation-offset [truncation-offset #f])
+  (define expected
+    (cond
+      [checksum?
+       (define len* (sub1 (string-length code)))
+       (define checksum (char->integer (string-ref code len*)))
+       (define code* (substring code 0 len*))
+       (unless (luhn-checksum-valid? checksum
+                                     (string->number code*)
+                                     (sub1 len*))
+         (raise
+          (exn:fail:otp:checksum
+           (~a code " has incorrect checksum")
+           (current-continuation-marks))))
+       code*]
+      [else code]))
+  (equal?
+   (generate-hotp secret
+                  moving-factor
+                  #:mode mode
+                  #:digits digits
+                  #:checksum? #f
+                  #:truncation-offset truncation-offset)
+   expected))
+
+(provide generate-hotp hotp-valid? sha1)
 
 (module+ test
 
   (require rackunit)
-
-
-  (define sha256 (get-digest 'sha256 libcrypto-factory))
-  (define sha512 (get-digest 'sha512 libcrypto-factory))
-
-  (check-equal?
-   (luhn-checksum 7992739871) 3)
 
   (define secret
     (string->bytes/utf-8 "12345678901234567890"))
