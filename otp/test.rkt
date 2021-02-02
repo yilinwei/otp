@@ -24,9 +24,22 @@
   (for
       ([expected (in-list lst)]
        [count (in-naturals)])
-    (check-equal?
-     (generate-hotp secret count #:mode mode)
-     expected)))
+    (define code
+      (generate-hotp secret count #:mode mode))
+    (check-equal? code expected)
+    (check-true (hotp-valid? secret count code #:mode mode))))
+
+(test-begin
+  (define count 0)
+  (define secret (string->bytes/utf-8 "123a992as123"))
+  (define code
+    (generate-hotp
+     secret
+     count
+     #:checksum? #t))
+  (check-true (hotp-valid? secret count code #:checksum? #t))
+  (check-exn exn:fail:otp:checksum?
+             (λ () (hotp-valid? secret count "01231904" #:checksum? #t))))
 
 (check-totp
  sha1

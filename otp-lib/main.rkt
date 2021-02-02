@@ -4,7 +4,8 @@
          crypto)
 
 (require "private/hotp.rkt"
-         "private/totp.rkt")
+         "private/totp.rkt"
+         "private/error.rkt")
 
 (define digest-spec-or-impl?
   (or/c digest-spec?
@@ -27,7 +28,18 @@
            n)))))
 
 (provide
+ (struct-out exn:fail:otp:checksum)
  (contract-out
+  [hotp-valid?
+   (->*
+    (bytes?
+     exact-integer?
+     string?)
+    (#:mode digest-spec-or-impl?
+     #:digits otp-digits/c
+     #:checksum? boolean?
+     #:truncation-offset (or/c #f (</c 16)))
+    boolean?)]
   [generate-totp
    (->i
     ([secret bytes?])
