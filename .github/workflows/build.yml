@@ -18,6 +18,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install racket
     - name: build package
-      run: raco pkg install --auto
+      run: raco pkg install --auto otp/ otp-lib/
     - name: run tests
       run: raco test .
