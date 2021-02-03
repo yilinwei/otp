@@ -12,12 +12,8 @@ jobs:
     steps:
     - name: checkout project
       uses: actions/checkout@v2
-    - name: install racket
-      run: |
-        sudo add-apt-repository ppa:plt/racket
-        sudo apt-get update
-        sudo apt-get install racket
-    - name: build package
-      run: raco pkg install --auto otp/ otp-lib/ otp-doc/
-    - name: run tests
-      run: raco test .
+    - name: Racket Package CI
+      uses: jackfirth/racket-package-ci-action@v0.1.4
+      with:
+        name: otp
+        directory: otp
