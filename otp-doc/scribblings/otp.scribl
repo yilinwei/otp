@@ -95,7 +95,6 @@ fulfill that role.
   parameters.
 }
 
-
 @defproc[(totp-valid? [secret bytes?]
 		      [#:mode mode
 			(or/c digest-spec? digest-impl?) 'sha1]
