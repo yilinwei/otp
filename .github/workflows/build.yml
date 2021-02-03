@@ -18,6 +18,6 @@ jobs:
         name: otp
         directory: otp
         doc_directory: otp-doc
-        main_ref: /refs/head/master
+        main_ref: refs/head/master
         scribble_file: otp
         github_token: ${{ secrets.GITHUB_TOKEN }}
