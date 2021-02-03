@@ -114,7 +114,8 @@ fulfill that role.
   The @racket[max-drift] is the @italic{tolerance} of method in @italic{either direction}.
   This is to compensate for the fact that system clocks can drift and be different. This
   is measured in units of @racket[Δt] and centred around @racket[t]. With the default parameters,
-  a @racket[max-drift] of @racket[1] corresponds to a window of @racket[(* 2 Δt)] seconds.
+  a @racket[max-drift] of @racket[1] corresponds to a window of @racket[(* 2 30)] seconds 
+  around @racket[current-time].
 
   See the corresponding @racketlink[generate-totp]{generate method} for information
   on the rest of the parameters.
