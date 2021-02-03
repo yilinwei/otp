@@ -27,9 +27,8 @@
                      #:mode [mode sha1]
                      #:time-start [t₀ 0]
                      #:time-step [δt 30]
-                     #:digits [digits 8]
                      #:checksum? [checksum? #f]
-                     #:max-drift [max-drift 1]) ; Measured in units of Δt
+                     #:max-drift [max-drift 1]) ; Measured in units of δt
   (define code* (checked-code code checksum?))
   (define t (if (exact-integer? time)
                 time
@@ -39,7 +38,6 @@
                  (clamp t t₀ δt)
                  code*
                  #:mode mode
-                 #:digits digits
                  ;; Checked earlier, no need to do it again
                  #:checksum? #f))
   (for/or
