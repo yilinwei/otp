@@ -10,13 +10,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: checkout project
+    - name: Checkout project
       uses: actions/checkout@v2
-    - name: Racket Package CI
-      uses: yilinwei/racket-package-ci-action@master
+    - name: Install package
+      uses: docker://racket/racket:7.9-full
       with:
-        name: otp
-        directory: otp
+        entrypoint: raco
+        args: pkg install --auto otp/ otp-lib/ otp-doc/
+    - name: Run tests
+      uses: docker://racket/racket:7.9-full
+      with:
+        entrypoint: raco
+        args: test otp otp-lib
+    - name: Deploy documentation
+      uses: docker://racket/racket:7.9-full
+      with:
+        entrypoint: ./docs.sh
         doc_directory: otp-doc
         main_ref: refs/heads/master
         scribble_file: otp
