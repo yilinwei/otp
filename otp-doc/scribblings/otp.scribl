@@ -99,7 +99,10 @@ fulfill that role.
 @defproc[(totp-valid? [secret bytes?]
 		      [#:mode mode
 			(or/c digest-spec? digest-impl?) 'sha1]
-                      [#:time t exact-integer? (current-seconds)]
+                      [#:time t
+		        (or/c exact-integer?
+			      (-> exact-integer?))
+			      current-seconds]
                       [#:time-start t₀ exact-nonnegative-integer? 0]
                       [#:time-step Δt exact-nonnegative-integer? 30]
 		      [#:digits digits (between/c 4 10) 8]
