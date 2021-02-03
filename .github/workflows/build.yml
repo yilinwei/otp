@@ -20,4 +20,4 @@ jobs:
         doc_directory: otp-doc
         main_ref: /refs/head/master
         scribble_file: otp
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        deploy_token: ${{ secrets.GITHUB_TOKEN }}
