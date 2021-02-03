@@ -43,7 +43,6 @@
      exact-integer?
      string?)
     (#:mode digest-spec-or-impl?
-     #:digits otp-digits/c
      #:checksum? boolean?
      #:truncation-offset (or/c #f (</c 16)))
     boolean?)]
@@ -67,13 +66,10 @@
     (#:mode digest-spec-or-impl?
      #:time (or/c exact-integer?
                   (-> exact-integer?))
-     #:time-start exact-positive-integer?
-     #:time-step exact-positive-integer?
-     #:digits otp-digits/c
+     #:time-start exact-nonnegative-integer?
+     #:time-step exact-nonnegative-integer?
      #:checksum? boolean?
-     #:max-drift (or/c
-                  zero?
-                  exact-positive-integer?))
+     #:max-drift exact-nonnegative-integer?)
     boolean?)]
   [generate-hotp
    (->i

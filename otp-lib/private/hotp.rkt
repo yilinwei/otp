@@ -59,18 +59,17 @@
                      moving-factor
                      code
                      #:mode [mode sha1]
-                     #:digits [digits 6]
                      #:checksum? [checksum? #f]
                      #:truncation-offset [truncation-offset #f])
-  (define expected (checked-code code checksum?))
+  (define code* (checked-code code checksum?))
   (equal?
    (generate-hotp secret
                   moving-factor
                   #:mode mode
-                  #:digits digits
+                  #:digits (string-length code*)
                   #:checksum? #f
                   #:truncation-offset truncation-offset)
-   expected))
+   code*))
 
 (provide generate-hotp hotp-valid? sha1)
 

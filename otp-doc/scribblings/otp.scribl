@@ -2,11 +2,14 @@
 
 @(require
   racket/format
+  "utils.rkt"
+  racket/string
   (for-label racket otp crypto))
 
-@(define ietf-url "https://tools.ietf.org/html")
-@(define hotp-rfc-link (link (~a ietf-url "/rfc4226") "RFC 4226"))
-@(define totp-rfc-link (link (~a ietf-url "/rfc6238") "RFC 6238"))
+@(define hotp-rfc-link (ietf-rfc "4226"))
+@(define totp-rfc-link (ietf-rfc "6238"))
+@(define hotp-acronym (expand-acronym '("HMAC-based " "One-" "Time " "Password")))
+@(define totp-acronym (expand-acronym '("Time-based " "One-" "Time " "Password")))
 
 @title{One-time passwords}
 
@@ -18,25 +21,22 @@ in the @racketmodname[crypto] module.
 
 @section{HOTP}
 
-Defined in @|hotp-rfc-link|, HOTP (HMAC-based One-Time Password) uses a
-hashing algorithm such as SHA1 and a secret key to sign a @italic{moving
-factor} — generating a one-time password.
+Detailed in @|hotp-rfc-link|, @hotp-acronym  uses a hashing algorithm and
+secret key to sign a @italic{moving factor} to generate a one-time password.
 
-The moving factor is provided by the user; it can be a counter or
-any value which is guaranteed to change each time a password
-is generated.
+The @italic{moving factor} is a parameter provided by the user; it can be any value
+which is guaranteed to change each time a password is generated.
 
 @defproc[(generate-hotp [secret bytes?]
                         [moving-factor exact-integer?]
 			[#:mode mode
 			(or/c digest-spec? digest-impl?) 'sha1]
 			[#:digits digits (between/c 4 10) 6]
-			[#:checksum? boolean? #f]
+			[#:checksum? checksum? boolean? #f]
 			[#:truncation-offset truncation-offset (or/c #f (</c 16)) #f])
-	 string?]{
-  Generates a HOTP (HMAC-based One-Time Password) using the
-  @racket[mode] as the hashing algorithm and @racket[secret] as
-  the key.
+	 		string?]{
+  Generates a @hotp-acronym using the @racket[mode] as the hashing
+  algorithm and @racket[secret] as the key.
 
   The password is guaranteed to be a @racket[string?] with a @racket[string-length] of
   @racket[digits] and characters between @racket[0] and @racket[9].
@@ -46,5 +46,74 @@ is generated.
 
   The @racket[truncation-offset] controls which part of the generated
   hash will be used for the password — in the case that it’s not set,
-  it defaults to the automatic selection defined in the RFC.
+  it defaults to an automatic selection algorithm.
+}
+
+@defproc[(hotp-valid? [secret bytes?]
+                      [moving-factor exact-integer?]
+		      [code string?]
+		      [#:mode mode
+		      (or/c digest-spec? digest-impl?) 'sha1]
+		      [#:truncation-offset truncation-offset (or/c #f (</c 16)) #f]
+		      [#:checksum? checksum? boolean? #f])
+		      boolean?]{
+  Checks whether a @racket[code] corresponds to the @racket[moving-factor].
+
+  The number of @racket[digits] is inferred from the @racket[string-length]
+  of @racket[code] and @racket[checksum?].
+
+  See the corresponding @racketlink[generate-hotp]{generate method} for information
+  on the rest of the parameters.
+}
+
+@section{TOTP}
+
+Detailed in @|totp-rfc-link|, @|totp-acronym|, is an extension to
+@secref{HOTP} using a Unix-based timestamp as a @italic{moving factor}. This
+means there is no need for a second trusted channel to share a @italic{moving factor} — the
+system clock and @link["https://en.wikipedia.org/wiki/Network_Time_Protocol"]{NTP} servers
+fulfill that role.
+
+@defproc[(generate-totp [secret bytes?]
+			[#:mode mode
+			(or/c digest-spec? digest-impl?) 'sha1]
+                        [#:time t exact-integer? (current-seconds)]
+                        [#:time-start t₀ exact-nonnegative-integer? 0]
+                        [#:time-step Δt exact-nonnegative-integer? 30]
+			[#:digits digits (between/c 4 10) 8]
+			[#:checksum? checksum? boolean? #f])
+	 		string?]{
+
+  Generates a @totp-acronym using the @racket[mode] as the hashing algorithm,
+  @racket[secret] as the key and @racket[t] as the @italic{moving factor}.
+
+  The parameter @racket[Δt] controls the @italic{resolution} of the underling timer
+  for the @italic{moving factor}. t₀ is the @italic{time offset} from the standard
+  Unix epoch time. Both parameters are measured in @italic{seconds}.
+
+  See @racketlink[generate-hotp]{generate-hotp} for information on the rest of the
+  parameters.
+}
+
+
+@defproc[(totp-valid? [secret bytes?]
+		      [#:mode mode
+			(or/c digest-spec? digest-impl?) 'sha1]
+                      [#:time t exact-integer? (current-seconds)]
+                      [#:time-start t₀ exact-nonnegative-integer? 0]
+                      [#:time-step Δt exact-nonnegative-integer? 30]
+		      [#:digits digits (between/c 4 10) 8]
+		      [#:checksum? checksum boolean? #f]
+		      [#:max-drift max-drift exact-nonnegative-integer? 0])
+		      boolean?]{
+
+  Checks whether a @racket[code] corresponds to the @italic{moving factor} @racket[t].
+
+  The @racket[max-drift] is the @italic{tolerance} of method in @italic{either direction}.
+  This is to compensate for the fact that system clocks can drift and be different. This
+  is measured in units of @racket[Δt] and centred around @racket[t]. With the default parameters,
+  a @racket[max-drift] of @racket[1] corresponds to a window of @racket[(* 2 Δt)] seconds.
+
+  See the corresponding @racketlink[generate-totp]{generate method} for information
+  on the rest of the parameters.
 }
