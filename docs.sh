@@ -11,7 +11,7 @@ if [ -n "$INPUT_DOC_DIRECTORY" ] && [ -n "$INPUT_SCRIBBLE_FILE" ] \
     if [[ -z "$GITHUB_BASE_REF" ]] && [ "$INPUT_MAIN_REF" == "$GITHUB_REF" ]; then
         echo "Uploading documentation under ${INPUT_DOC_DIRECTORY}..."
 	raco scribble +m --htmls \
-	     --redirect-main http://pkg-build.racket-lang.org/doc/ \
+	     --redirect http://pkg-build.racket-lang.org/doc/ \
 	     --dest ./docs \
 	     "${INPUT_DOC_DIRECTORY}/scribblings/${INPUT_SCRIBBLE_FILE}.scribl"
 	# Here we create a /new/ repository with no history where the scribble docs are generated.
