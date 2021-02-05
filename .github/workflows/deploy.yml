@@ -3,9 +3,11 @@ name: Deploy
 on:
   push:
     branches: [ master ]
+    paths:
+      - 'otp-doc/**'
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout project
