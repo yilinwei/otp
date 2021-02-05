@@ -21,9 +21,4 @@ jobs:
     - name: Build package
       run: raco pkg install --auto otp/ otp-lib/ otp-doc/
     - name: Deploy documentation
-      run: ./docs.sh
-      with:
-        doc_directory: otp-doc
-        main_ref: refs/heads/master
-        scribble_file: otp
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+      run: ./docs.sh otp-doc otp ${{ secrets.GITHUB_TOKEN }}
