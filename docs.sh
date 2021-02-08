@@ -5,7 +5,7 @@ set -euo pipefail
 doc_directory=$1
 scribble_file=$2
 github_token=$3
-doc_branch='gh:pages'
+doc_branch='gh\:pages'
 
 # This part of the script, which publishes the scribble docs to Github pages,
 # is adapted from Alexis King’s original scripts for Travis CI. Unfortunately,
