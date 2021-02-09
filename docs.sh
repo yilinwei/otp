@@ -13,7 +13,7 @@ doc_branch='gh-pages'
 # the user to set the paths.
 if [ -n "$doc_directory" ] && [ -n "$scribble_file" ] && [ -n "$github_token" ]; then
     raco scribble +m --htmls \
-	 --redirect https://docs.racket-lang.org/search/index.html \
+	 --redirect-main http://docs.racket-lang.org \
 	 --dest ./docs \
 	 "${doc_directory}/scribblings/${scribble_file}.scribl"
     # Here we create a /new/ repository with no history where the scribble docs are generated.
