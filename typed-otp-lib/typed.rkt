@@ -12,10 +12,10 @@
          Otp-Digits
          Truncation-Offset)
 
-(require/typed/provide "private/error.rkt"
+(require/typed/provide otp/private/error
   [#:struct (exn:fail:otp:checksum exn:fail) ()])
 
-(require/typed/provide "private/hotp.rkt"
+(require/typed/provide otp/private/hotp
   [generate-hotp (-> Bytes
                      Integer
                      [#:mode Digest-Spec-Or-Impl]
@@ -31,7 +31,7 @@
                    [#:truncation-offset (U False Truncation-Offset)]
                    Boolean)])
 
-(require/typed/provide "private/totp.rkt"
+(require/typed/provide otp/private/totp
   [generate-totp (-> Bytes
                      [#:mode Digest-Spec-Or-Impl]
                      [#:time Integer]
