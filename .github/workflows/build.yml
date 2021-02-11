@@ -28,6 +28,6 @@ jobs:
         version: ${{ matrix.version }}
         packages: 'crypto'
     - name: Build package
-      run: raco pkg install --auto otp/ otp-lib/ otp-doc/
+      run: raco pkg install --auto otp/ otp-lib/ typed-otp-lib/ otp-doc/
     - name: Run tests
-      run: raco test otp otp-lib
+      run: raco test otp otp-lib typed-otp-lib
