@@ -22,6 +22,6 @@ jobs:
         version: '7.9'
         packages: 'crypto'
     - name: Build package
-      run: raco pkg install --auto otp/ otp-lib/ otp-doc/
+      run: raco pkg install --auto otp/ otp-lib/ otp-doc/ typed-otp-lib/
     - name: Deploy documentation
       run: ./docs.sh otp-doc otp ${{ secrets.GITHUB_TOKEN }}
