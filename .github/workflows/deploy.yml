@@ -19,7 +19,7 @@ jobs:
         architecture: 'x64'
         distribution: 'full'
         variant: 'CS'
-        version: '7.9'
+        version: '8.5'
         packages: 'crypto'
     - name: Build package
       run: raco pkg install --auto otp/ otp-lib/ otp-doc/ typed-otp-lib/
