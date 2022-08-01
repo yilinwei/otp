@@ -20,7 +20,7 @@ jobs:
     - name: Checkout project
       uses: actions/checkout@v2
     - name: Setup Racket
-      uses: Bogdanp/setup-racket@v0.13
+      uses: Bogdanp/setup-racket@v1.8.1
       with:
         architecture: 'x64'
         distribution: 'full'
