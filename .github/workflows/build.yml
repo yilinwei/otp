@@ -11,9 +11,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - version: '8.4'
-            variant: 'CS'
           - version: '8.5'
+            variant: 'CS'
+          - version: '8.6'
             variant: 'CS'
     runs-on: ubuntu-latest
     steps:
